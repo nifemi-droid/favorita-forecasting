@@ -11,29 +11,28 @@ df = df.sort_values(["store_nbr", "family", "date"])
 train_df = df[df["date"] < "2017-08-01"].copy()
 test_df = df[(df["date"] >= "2017-08-01") & (df["date"] <= "2017-08-15")].copy()
 
-# 2. Feature Engineering (Train only)
+# 2. Feature Engineering
 print("Creating features (this takes ~1 minute)...")
 
-def create_features(df):
+def add_calendar_features(df):
     df["day_of_week"] = df["date"].dt.dayofweek
     df["day_of_month"] = df["date"].dt.day
     df["month"] = df["date"].dt.month
-    
-    # Lags
-    for lag in [1, 7, 14, 30, 365]:
-        df[f"lag_{lag}"] = df.groupby(["store_nbr", "family"])["total_sales"].shift(lag)
-    
-    # Rolling Averages
-    for window in [7, 30]:
-        df[f"rolling_{window}"] = df.groupby(["store_nbr", "family"])["total_sales"].shift(1).rolling(window).mean()
-        
     return df
 
-train_df = create_features(train_df)
+# Add calendar features to both
+train_df = add_calendar_features(train_df)
+test_df = add_calendar_features(test_df)
+
+# Add Lags and Rolling to Train only
+for lag in [1, 7, 14, 30, 365]:
+    train_df[f"lag_{lag}"] = train_df.groupby(["store_nbr", "family"])["total_sales"].shift(lag)
+
+for window in [7, 30]:
+    train_df[f"rolling_{window}"] = train_df.groupby(["store_nbr", "family"])["total_sales"].shift(1).rolling(window).mean()
 
 # 3. Handle the Test Set features
-# We don't have lags for the future, so we need to create them.
-# A common cheat is to use the last known rolling average for all future lags.
+# We use the last known average from the training set to fill in the missing lags
 last_7_avg = train_df.groupby(["store_nbr", "family"])["total_sales"].mean().reset_index()
 last_7_avg.rename(columns={"total_sales": "rolling_7"}, inplace=True)
 last_7_avg["rolling_30"] = last_7_avg["rolling_7"]
