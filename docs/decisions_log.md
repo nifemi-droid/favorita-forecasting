@@ -22,3 +22,8 @@
 - ETS (Classical): **28.66% WAPE** (Won)
 **Decision:** We chose to deploy the ETS model. 
 **Why:** The LightGBM model failed due to the "fake lag" problem in the test set. The ETS model handled seasonality natively and beat the baseline. **This proves the AI PM principle: A simpler model with correct assumptions beats a complex model with broken data.**
+
+## Decision 5: The Cost of Imperfect Forecasting
+**Context:** We simulated ordering exactly what the ETS model predicted for Store 1, Grocery I, over a 15-day period.
+**Results:** We wasted 7,366 units (overstock) and missed 2,328 units (stockout). Estimated financial loss: **R$ 96,943**.
+**PM Decision:** The current model assumes symmetric costs. In production, we would adjust the order quantity based on a "safety stock" multiplier (e.g., order 90% of the forecast if spoilage is high) and measure the new trade-off.
