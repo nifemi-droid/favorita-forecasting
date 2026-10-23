@@ -8,3 +8,8 @@
 ## Decision 2: Handling the "Zero-Sales Trap"
 **Context:** 31.3% of our daily data has zero sales. 
 **Decision:** We will NOT drop these zeros (that would cause massive data leakage and bias). We will treat them as real signal (e.g., store closed), but we will evaluate our models using WAPE, which handles zeros gracefully.
+
+## Decision 3: The Baseline Benchmark
+**Context:** Before training complex models, we built a "Naive Baseline" that predicts sales based on the average of the last week. 
+**Results:** The baseline achieves a WAPE of **30.88%**. 
+**Decision:** Any machine learning model we build MUST beat this 30.88% WAPE. If it doesn't, it means the ML model is not worth the engineering complexity.
